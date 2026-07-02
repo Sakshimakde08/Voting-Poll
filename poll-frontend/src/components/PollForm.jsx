@@ -1,6 +1,7 @@
 import {useState} from "react";
  import api from "../services/api";
-function PollForm(){
+
+function PollForm({onPollCreated}){
 
     const[question,setQuestion] = useState("");
     const[option1,setOption1] = useState("");
@@ -10,50 +11,135 @@ function PollForm(){
 
     const handleClick = async ()=>{
 
-        const poll ={
+        if(!question.trim() || !option1.trim() || !option2.trim()){
+            alert("Please enter a question and at least two options!!!");
+            return;
+            }
+
+
+        const pollPayload ={
             questions : question,
             options : [
                 {
-                    voteOption : option1
+                    voteOption : option1, voteCount:0
                     },
                  {
-                                    voteOption : option2
+                                    voteOption : option2, voteCount:0
                                     },
                                  {
-                                                    voteOption : option3
+                                                    voteOption : option3, voteCount:0
                                                     },
                                                  {
-                                                                    voteOption : option4
+                                                                    voteOption : option4, voteCount:0
                                                                     },
-                ]
+                ].filter(opt => opt.voteOption.trim()!== "")
             };
 
-        await api.post("",poll)
+        console.log("Sending New Poll Date to Backend:", pollPayload);
+
+        try{
+        await api.post("",pollPayload)
         alert("Poll Created Successfully!!!");
+
+        setQuestion("");
+        setQuestion("");
+        setQuestion("");
+        setQuestion("");
+
+        if (onPollCreated){
+            onPollCreated();
+            }
         }
 
+        catch (error){
+            console.error("Error creating a new poll:", error);
+            alert("Failed to create poll. Check your browser console or your Spring-Boot logs.");
+            }
+        };
+
     return (
+            <div
+                style={{
+                    maxWidth: "600px",
+                    margin: "20px auto",
+                    padding: "25px",
+                    border: "1px solid #444",
+                    borderRadius: "8px",
+                    backgroundColor: "#1e1e24",
+                    color: "#fff",
+                    boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+                }}
+            >
+                <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Create New Poll</h2>
 
-         <>
-        <h2>Create Polls</h2>
-        <input type="text" placeholder="Enter your question" value={question}
-        onChange={(event) => setQuestion(event.target.value)}  />
-        <input type="text" placeholder="Enter Option1" value={option1}
-                onChange={(event) => setOption1(event.target.value)}  />
-                <input type="text" placeholder="Enter Option2" value={option2}
-                        onChange={(event) => setOption2(event.target.value)}  />
-                        <input type="text" placeholder="Enter Option3" value={option3}
-                                onChange={(event) => setOption3(event.target.value)}  />
-                                <input type="text" placeholder="Enter Option4" value={option4}
-                                        onChange={(event) => setOption4(event.target.value)}  />
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <label><strong>Question:</strong></label>
+                    <input
+                        type="text"
+                        placeholder="e.g., What is your preferred backend language?"
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                        style={inputStyle}
+                    />
 
-          <button onClick={handleClick}>
-              Create Poll
-          </button>
+                    <label><strong>Voting Choices (Minimum 2):</strong></label>
+                    <input
+                        type="text"
+                        placeholder="Enter choice option 1"
+                        value={option1}
+                        onChange={(e) => setOption1(e.target.value)}
+                        style={inputStyle}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Enter choice option 2"
+                        value={option2}
+                        onChange={(e) => setOption2(e.target.value)}
+                        style={inputStyle}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Enter choice option 3 (Optional)"
+                        value={option3}
+                        onChange={(e) => setOption3(e.target.value)}
+                        style={inputStyle}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Enter choice option 4 (Optional)"
+                        value={option4}
+                        onChange={(e) => setOption4(e.target.value)}
+                        style={inputStyle}
+                    />
 
-
-        </>
-
+                    <button
+                        onClick={handleClick}
+                        style={{
+                            marginTop: "10px",
+                            padding: "12px",
+                            backgroundColor: "#0d6efd",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "5px",
+                            fontWeight: "bold",
+                            cursor: "pointer",
+                            fontSize: "16px"
+                        }}
+                    >
+                        Create Poll
+                    </button>
+                </div>
+            </div>
         );
     }
-export default PollForm;
+
+    const inputStyle = {
+        padding: "10px",
+        borderRadius: "5px",
+        border: "1px solid #555",
+        backgroundColor: "#2a2a35",
+        color: "#fff",
+        fontSize: "14px"
+    };
+
+    export default PollForm;
